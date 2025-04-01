@@ -170,7 +170,7 @@ public class Main {
                         final long playTime = playtimeCache.getOrDefault(name, -67L); //Don't do anything if the player isn't yet added.
                         if(playTime == -67L)
                             return;
-                        playtimeCache.put(name, playTime + 1000L);
+                        playtimeCache.put(name, playTime + 5000L);
                         configHandler.getRewardsH().forEach((key, val) -> { //And rewards
                             try {
                                 if(key == playTime && !proxy.getPlayer(name).orElseThrow().hasPermission("vpt.rewards.exempt")) //TODO MOD HERE
@@ -179,7 +179,7 @@ public class Main {
                         });
                     }
                 })
-                .repeat(1L, TimeUnit.SECONDS)
+                .repeat(5L, TimeUnit.SECONDS)
                 .schedule();
 
         CommandManager commandManager = proxy.getCommandManager();
