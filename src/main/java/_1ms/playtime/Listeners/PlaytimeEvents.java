@@ -26,9 +26,11 @@ public class PlaytimeEvents {
                 long playtime = main.getSavedPt(playerName);
                 if (playtime == -1) {
                     main.playtimeCache.put(playerName, 0L);
+                    main.savePtAndLv(playerName, 0L, 0L);
                     return;
                 }
                 main.playtimeCache.put(playerName, playtime);
+                main.saveLv(playerName, 0L);
             }
         });
     }
@@ -38,7 +40,7 @@ public class PlaytimeEvents {
         return EventTask.async(() -> {
             final String playerName = e.getPlayer().getUsername();
             final long playerTime = main.playtimeCache.get(playerName);
-            main.savePt(playerName, playerTime);
+            main.savePtAndLv(playerName, playerTime, System.currentTimeMillis() / 1000L);
             if(!configHandler.isUSE_CACHE()) //Rem if caching isnt used, otherwise updateCache task clears it when needed
                 main.playtimeCache.remove(playerName);
         });

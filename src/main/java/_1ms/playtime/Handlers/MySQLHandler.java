@@ -21,7 +21,7 @@ public class MySQLHandler {
         final String url = "jdbc:mariadb://" + configHandler.getADDRESS() +":" + configHandler.getPORT() + "/" + configHandler.getDB_NAME() + "?user=" + configHandler.getUSERNAME() + "&password=" + configHandler.getPASSWORD() + "&driver=org.mariadb.jdbc.Driver";
         try {
             conn = DriverManager.getConnection(url);
-            conn.createStatement().execute("CREATE TABLE IF NOT EXISTS playtimes (name VARCHAR(20) PRIMARY KEY, time BIGINT NOT NULL)");
+            conn.createStatement().execute("CREATE TABLE IF NOT EXISTS playtimes (name VARCHAR(20) PRIMARY KEY, time BIGINT NOT NULL DEFAULT 0, last_visit BIGINT)");
         } catch (SQLException e) {
             main.getLogger().error("Error while connecting to the database: {}", e.getMessage());
             return false;
@@ -35,6 +35,44 @@ public class MySQLHandler {
                 pstmt.setString(1, name);
                 pstmt.setLong(2, time);
                 pstmt.setLong(3, time);
+                pstmt.executeUpdate();
+                break;
+            } catch (SQLException e) {
+                if(e instanceof SQLNonTransientConnectionException) { //If the conn was dropped, try to reopen it once.
+                    openConnection();
+                    continue;
+                }
+                throw new RuntimeException("Error while saving data into the database", e);
+            }
+        }
+    }
+
+    public void saveDataWithLv(final String name, final long time, final long last_visit) {
+        for(int i = 0; i < 2; i++) {
+            try(PreparedStatement pstmt = conn.prepareStatement("INSERT INTO playtimes (name, time, last_visit) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE time = ?, last_visit = ?")) {
+                pstmt.setString(1, name);
+                pstmt.setLong(2, time);
+                pstmt.setLong(3, last_visit);
+                pstmt.setLong(4, time);
+                pstmt.setLong(5, last_visit);
+                pstmt.executeUpdate();
+                break;
+            } catch (SQLException e) {
+                if(e instanceof SQLNonTransientConnectionException) { //If the conn was dropped, try to reopen it once.
+                    openConnection();
+                    continue;
+                }
+                throw new RuntimeException("Error while saving data into the database", e);
+            }
+        }
+    }
+
+    public void saveDataOnlyLv(final String name, final long last_visit) {
+        for(int i = 0; i < 2; i++) {
+            try(PreparedStatement pstmt = conn.prepareStatement("INSERT INTO playtimes (name, last_visit) VALUES (?, ?) ON DUPLICATE KEY UPDATE last_visit = ?")) {
+                pstmt.setString(1, name);
+                pstmt.setLong(2, last_visit);
+                pstmt.setLong(3, last_visit);
                 pstmt.executeUpdate();
                 break;
             } catch (SQLException e) {

@@ -254,9 +254,17 @@ public class Main {
     public void savePt(String name, long time) {
         if(configHandler.isDATABASE()) {
             mySQLHandler.saveData(name, time);
-            return;
         }
-        configHandler.savePtToConfig(name, time);
+    }
+    public void savePtAndLv(String name, long time, long last_visit) {
+        if(configHandler.isDATABASE()) {
+            mySQLHandler.saveDataWithLv(name, time, last_visit);
+        }
+    }
+    public void saveLv(String name, long last_visit) {
+        if(configHandler.isDATABASE()) {
+            mySQLHandler.saveDataOnlyLv(name, last_visit);
+        }
     }
 
     public void removeAllPt() {
