@@ -76,7 +76,6 @@ public class CacheHandler {
             main.savePt(name, time);
         }
 
-
         for (int i = 0; i < main.playtimeCache.size(); i++) { //Check players on the server only, not the toplist
             String member = TempCache.entrySet().stream()
                     .min(Map.Entry.comparingByValue())
