@@ -30,8 +30,9 @@ public class PlaytimeEvents {
                     return;
                 }
                 main.playtimeCache.put(playerName, playtime);
-                main.saveLv(playerName, 0L);
             }
+
+            main.saveLv(playerName, 0L);
         });
     }
 
