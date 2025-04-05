@@ -1,6 +1,5 @@
 package _1ms.playtime.Listeners;
 
-import _1ms.playtime.Commands.PlaytimeTopCommand;
 import _1ms.playtime.Handlers.ConfigHandler;
 import _1ms.playtime.Main;
 import com.google.common.io.ByteArrayDataInput;
@@ -29,7 +28,7 @@ public class RequestHandler {
     private final Gson gson = new Gson();
     private ScheduledTask task;
     private final HashMap<RegisteredServer, ScheduledTask> rsTasks = new HashMap<>();
-    public RequestHandler(Main main, PlaytimeTopCommand playtimeTopCommand, ConfigHandler configHandler) {
+    public RequestHandler(Main main, ConfigHandler configHandler) {
         this.main = main;
         this.configHandler = configHandler;
     }

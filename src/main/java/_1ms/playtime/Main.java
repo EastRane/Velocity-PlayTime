@@ -2,9 +2,6 @@ package _1ms.playtime;
 
 import _1ms.BuildConstants;
 import _1ms.playtime.Commands.ConfigReload;
-import _1ms.playtime.Commands.PlaytimeCommand;
-import _1ms.playtime.Commands.PlaytimeResetAll;
-import _1ms.playtime.Commands.PlaytimeTopCommand;
 import _1ms.playtime.Handlers.*;
 import _1ms.playtime.Listeners.PlaytimeEvents;
 import _1ms.playtime.Listeners.RequestHandler;
@@ -44,15 +41,12 @@ import java.util.concurrent.TimeUnit;
 @SuppressWarnings("unused")
 public class Main {
     public ConfigHandler configHandler;
-    public PlaytimeCommand playtimeCommand;
     public CacheHandler cacheHandler;
     public PlaytimeEvents playtimeEvents;
-    public PlaytimeTopCommand playtimeTopCommand;
     public RequestHandler requestHandler;
     public DataConverter dataConverter;
     public ConfigReload configReload;
     public UpdateHandler updateHandler;
-    public PlaytimeResetAll playtimeResetAll;
     public MySQLHandler mySQLHandler;
     public final MinecraftChannelIdentifier MCI = MinecraftChannelIdentifier.from("velocity:playtime");
 
@@ -63,14 +57,11 @@ public class Main {
         configHandler = new ConfigHandler(this);
         mySQLHandler = new MySQLHandler(configHandler, this);
         cacheHandler = new CacheHandler(this, configHandler);
-        playtimeCommand = new PlaytimeCommand(this, configHandler, cacheHandler);
         playtimeEvents = new PlaytimeEvents(this, configHandler);
-        playtimeTopCommand = new PlaytimeTopCommand(this, configHandler);
-        requestHandler = new RequestHandler(this, playtimeTopCommand, configHandler);
+        requestHandler = new RequestHandler(this, configHandler);
         dataConverter = new DataConverter(this, configHandler);
         configReload = new ConfigReload(configHandler);
         updateHandler = new UpdateHandler(this);
-        playtimeResetAll = new PlaytimeResetAll(this, configHandler);
     }
 
     public final HashMap<String, Long> playtimeCache = new HashMap<>();
@@ -170,7 +161,7 @@ public class Main {
                         final long playTime = playtimeCache.getOrDefault(name, -67L); //Don't do anything if the player isn't yet added.
                         if(playTime == -67L)
                             return;
-                        playtimeCache.put(name, playTime + 5000L);
+                        playtimeCache.put(name, playTime + 5L);
                         configHandler.getRewardsH().forEach((key, val) -> { //And rewards
                             try {
                                 if(key == playTime && !proxy.getPlayer(name).orElseThrow().hasPermission("vpt.rewards.exempt")) //TODO MOD HERE
@@ -183,19 +174,7 @@ public class Main {
                 .schedule();
 
         CommandManager commandManager = proxy.getCommandManager();
-        CommandMeta commandMeta = commandManager.metaBuilder("playtime")
-                .aliases("pt")
-                .plugin(this)
-                .build();
-        SimpleCommand simpleCommand = playtimeCommand;
-        commandManager.register(commandMeta, simpleCommand);
 
-        CommandMeta commandMeta2 = commandManager.metaBuilder("playtimetop")
-                .aliases("pttop", "ptt")
-                .plugin(this)
-                .build();
-        SimpleCommand simpleCommand2 = playtimeTopCommand;
-        commandManager.register(commandMeta2, simpleCommand2);
 
         CommandMeta commandMeta3 = commandManager.metaBuilder("playtimereload")
                 .aliases("ptrl", "ptreload")
@@ -203,13 +182,6 @@ public class Main {
                 .build();
         SimpleCommand simpleCommand3 = configReload;
         commandManager.register(commandMeta3, simpleCommand3);
-
-        CommandMeta commandMeta4 = commandManager.metaBuilder("playtimeresetall")
-                .aliases( "ptra", "ptresetall")
-                .plugin(this)
-                .build();
-        SimpleCommand simpleCommand4 = playtimeResetAll;
-        commandManager.register(commandMeta4, simpleCommand4);
 
         requestHandler.sendRS();
 
@@ -336,7 +308,7 @@ public class Main {
     }
 
     public LinkedHashMap<String, Long> doSort(@Nullable SimpleCommand.Invocation invocation) {
-        final HashMap<String, Long> TempCache = configHandler.isUSE_CACHE() ? cacheHandler.generateTempCache() : playtimeTopCommand.getInRuntime();
+        final HashMap<String, Long> TempCache = cacheHandler.generateTempCache();
         final boolean isForPlaceholder = invocation == null;
         final LinkedHashMap<String, Long> placeholderH  = new LinkedHashMap<>();
         if(!isForPlaceholder)
