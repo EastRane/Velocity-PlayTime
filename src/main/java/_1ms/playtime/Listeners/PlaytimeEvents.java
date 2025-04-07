@@ -21,29 +21,29 @@ public class PlaytimeEvents {
     @Subscribe
     public EventTask onConnect(PostLoginEvent e) {
         return EventTask.async(() -> { //NOte it it async.
-            String playerName = e.getPlayer().getUsername();
-            if(!main.playtimeCache.containsKey(playerName)) {
-                long playtime = main.getSavedPt(playerName);
+            String playerUUID = String.valueOf(e.getPlayer().getUniqueId());
+            if(!main.playtimeCache.containsKey(playerUUID)) {
+                long playtime = main.getSavedPt(playerUUID);
                 if (playtime == -1) {
-                    main.playtimeCache.put(playerName, 0L);
-                    main.savePtAndLv(playerName, 0L, 0L);
+                    main.playtimeCache.put(playerUUID, 0L);
+                    main.savePtAndLv(playerUUID, 0L, 0L);
                     return;
                 }
-                main.playtimeCache.put(playerName, playtime);
+                main.playtimeCache.put(playerUUID, playtime);
             }
 
-            main.saveLv(playerName, 0L);
+            main.saveLv(playerUUID, 0L);
         });
     }
 
     @Subscribe
     public EventTask onLeave(DisconnectEvent e) {
         return EventTask.async(() -> {
-            final String playerName = e.getPlayer().getUsername();
-            final long playerTime = main.playtimeCache.get(playerName);
-            main.savePtAndLv(playerName, playerTime, System.currentTimeMillis() / 1000L);
+            final String playerUUID = String.valueOf(e.getPlayer().getUniqueId());
+            final long playerTime = main.playtimeCache.get(playerUUID);
+            main.savePtAndLv(playerUUID, playerTime, System.currentTimeMillis() / 1000L);
             if(!configHandler.isUSE_CACHE()) //Rem if caching isnt used, otherwise updateCache task clears it when needed
-                main.playtimeCache.remove(playerName);
+                main.playtimeCache.remove(playerUUID);
         });
     }
 

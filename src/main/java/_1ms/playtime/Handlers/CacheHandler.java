@@ -71,9 +71,9 @@ public class CacheHandler {
         //main.getLogger().info("hi! {}", main.playtimeCache.entrySet());
         // Save all playtimeCache to mysql
         for (Map.Entry<String, Long> entry : main.playtimeCache.entrySet()) {
-            String name = entry.getKey();
+            String uuid = entry.getKey();
             long time = entry.getValue();
-            main.savePt(name, time);
+            main.savePt(uuid, time);
         }
 
         for (int i = 0; i < main.playtimeCache.size(); i++) { //Check players on the server only, not the toplist
@@ -83,7 +83,7 @@ public class CacheHandler {
                     .orElseThrow();
 
             // probably don't need to make this check because everything was saved literally before it
-            Optional<Player> player = main.getProxy().getPlayer(member); //V Check if the pt has already been saved.
+            Optional<Player> player = main.getProxy().getPlayer(UUID.fromString(member)); //V Check if the pt has already been saved.
             if(player.isEmpty() && main.playtimeCache.get(member) == main.getSavedPt(member))
                 main.playtimeCache.remove(member);
             TempCache.remove(member);

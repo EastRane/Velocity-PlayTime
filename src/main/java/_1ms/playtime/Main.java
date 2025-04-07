@@ -157,15 +157,15 @@ public class Main {
         proxy.getScheduler()
                 .buildTask(this, () -> {//Playtime counting happens here.
                     for(Player player : proxy.getAllPlayers()) {
-                        final String name = player.getUsername();
-                        final long playTime = playtimeCache.getOrDefault(name, -67L); //Don't do anything if the player isn't yet added.
+                        final String uuid = String.valueOf(player.getUniqueId());
+                        final long playTime = playtimeCache.getOrDefault(uuid, -67L); //Don't do anything if the player isn't yet added.
                         if(playTime == -67L)
                             return;
-                        playtimeCache.put(name, playTime + 5L);
+                        playtimeCache.put(uuid, playTime + 5L);
                         configHandler.getRewardsH().forEach((key, val) -> { //And rewards
                             try {
-                                if(key == playTime && !proxy.getPlayer(name).orElseThrow().hasPermission("vpt.rewards.exempt")) //TODO MOD HERE
-                                    proxy.getCommandManager().executeAsync(proxy.getConsoleCommandSource(), val.replace("%player%", name));
+                                if(key == playTime && !proxy.getPlayer(uuid).orElseThrow().hasPermission("vpt.rewards.exempt")) //TODO MOD HERE
+                                    proxy.getCommandManager().executeAsync(proxy.getConsoleCommandSource(), val.replace("%player%", uuid));
                             } catch (Exception ignored) {}
                         });
                     }
@@ -219,23 +219,23 @@ public class Main {
         return tabargs;
     }
 
-    public long getSavedPt(String name) {
-        return configHandler.isDATABASE() ? mySQLHandler.readData(name) : configHandler.getPtFromConfig(name);
+    public long getSavedPt(String uuid) {
+        return configHandler.isDATABASE() ? mySQLHandler.readData(uuid) : configHandler.getPtFromConfig(uuid);
     }
 
-    public void savePt(String name, long time) {
+    public void savePt(String uuid, long time) {
         if(configHandler.isDATABASE()) {
-            mySQLHandler.saveData(name, time);
+            mySQLHandler.saveData(uuid, time);
         }
     }
-    public void savePtAndLv(String name, long time, long last_visit) {
+    public void savePtAndLv(String uuid, long time, long last_visit) {
         if(configHandler.isDATABASE()) {
-            mySQLHandler.saveDataWithLv(name, time, last_visit);
+            mySQLHandler.saveDataWithLv(uuid, time, last_visit);
         }
     }
-    public void saveLv(String name, long last_visit) {
+    public void saveLv(String uuid, long last_visit) {
         if(configHandler.isDATABASE()) {
-            mySQLHandler.saveDataOnlyLv(name, last_visit);
+            mySQLHandler.saveDataOnlyLv(uuid, last_visit);
         }
     }
 

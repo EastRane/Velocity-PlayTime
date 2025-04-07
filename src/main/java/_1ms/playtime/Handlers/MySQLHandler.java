@@ -21,7 +21,7 @@ public class MySQLHandler {
         final String url = "jdbc:mariadb://" + configHandler.getADDRESS() +":" + configHandler.getPORT() + "/" + configHandler.getDB_NAME() + "?user=" + configHandler.getUSERNAME() + "&password=" + configHandler.getPASSWORD() + "&driver=org.mariadb.jdbc.Driver";
         try {
             conn = DriverManager.getConnection(url);
-            conn.createStatement().execute("CREATE TABLE IF NOT EXISTS playtimes (name VARCHAR(20) PRIMARY KEY, time BIGINT NOT NULL DEFAULT 0, last_visit BIGINT)");
+            conn.createStatement().execute("CREATE TABLE IF NOT EXISTS playtimes (uuid CHAR(36) PRIMARY KEY, time BIGINT NOT NULL DEFAULT 0, last_visit BIGINT)");
         } catch (SQLException e) {
             main.getLogger().error("Error while connecting to the database: {}", e.getMessage());
             return false;
@@ -29,10 +29,10 @@ public class MySQLHandler {
         return true;
     }
 
-    public void saveData(final String name, final long time) {
+    public void saveData(final String uuid, final long time) {
         for(int i = 0; i < 2; i++) {
-            try(PreparedStatement pstmt = conn.prepareStatement("INSERT INTO playtimes (name, time) VALUES (?, ?) ON DUPLICATE KEY UPDATE time = ?")) {
-                pstmt.setString(1, name);
+            try(PreparedStatement pstmt = conn.prepareStatement("INSERT INTO playtimes (uuid, time) VALUES (?, ?) ON DUPLICATE KEY UPDATE time = ?")) {
+                pstmt.setString(1, uuid);
                 pstmt.setLong(2, time);
                 pstmt.setLong(3, time);
                 pstmt.executeUpdate();
@@ -47,10 +47,10 @@ public class MySQLHandler {
         }
     }
 
-    public void saveDataWithLv(final String name, final long time, final long last_visit) {
+    public void saveDataWithLv(final String uuid, final long time, final long last_visit) {
         for(int i = 0; i < 2; i++) {
-            try(PreparedStatement pstmt = conn.prepareStatement("INSERT INTO playtimes (name, time, last_visit) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE time = ?, last_visit = ?")) {
-                pstmt.setString(1, name);
+            try(PreparedStatement pstmt = conn.prepareStatement("INSERT INTO playtimes (uuid, time, last_visit) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE time = ?, last_visit = ?")) {
+                pstmt.setString(1, uuid);
                 pstmt.setLong(2, time);
                 pstmt.setLong(3, last_visit);
                 pstmt.setLong(4, time);
@@ -67,10 +67,10 @@ public class MySQLHandler {
         }
     }
 
-    public void saveDataOnlyLv(final String name, final long last_visit) {
+    public void saveDataOnlyLv(final String uuid, final long last_visit) {
         for(int i = 0; i < 2; i++) {
-            try(PreparedStatement pstmt = conn.prepareStatement("INSERT INTO playtimes (name, last_visit) VALUES (?, ?) ON DUPLICATE KEY UPDATE last_visit = ?")) {
-                pstmt.setString(1, name);
+            try(PreparedStatement pstmt = conn.prepareStatement("INSERT INTO playtimes (uuid, last_visit) VALUES (?, ?) ON DUPLICATE KEY UPDATE last_visit = ?")) {
+                pstmt.setString(1, uuid);
                 pstmt.setLong(2, last_visit);
                 pstmt.setLong(3, last_visit);
                 pstmt.executeUpdate();
@@ -85,10 +85,10 @@ public class MySQLHandler {
         }
     }
 
-    public long readData(final String name) {
+    public long readData(final String uuid) {
         for(int i = 0; i < 2; i++) {
-            try(PreparedStatement pstmt = conn.prepareStatement("SELECT time FROM playtimes WHERE name = ?")) {
-                pstmt.setString(1, name);
+            try(PreparedStatement pstmt = conn.prepareStatement("SELECT time FROM playtimes WHERE uuid = ?")) {
+                pstmt.setString(1, uuid);
                 try(ResultSet rs = pstmt.executeQuery()) {
                     if(rs.next())
                         return rs.getLong("time");
@@ -109,9 +109,9 @@ public class MySQLHandler {
     public Iterator<String> getIterator() {
         final Set<String> playtimes = new HashSet<>();
         for (int i = 0; i < 2; i++) {
-            try(ResultSet rs = conn.prepareStatement("SELECT name FROM playtimes").executeQuery()) {
+            try(ResultSet rs = conn.prepareStatement("SELECT uuid FROM playtimes").executeQuery()) {
                 while (rs.next())
-                    playtimes.add(rs.getString("name"));
+                    playtimes.add(rs.getString("uuid"));
                 return playtimes.iterator(); //Fill up and then  ret
             } catch (SQLException e) {
                 if(e instanceof SQLNonTransientConnectionException) {
